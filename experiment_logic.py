@@ -53,7 +53,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         win.flip()
         
         # Simulate thinking time
-        core.wait(0.5)
+        core.wait(0.2)
         
         # Select stimulus using ideal observer
         selected_id = ideal_observer_select(stimuli_arrays, target_array)
