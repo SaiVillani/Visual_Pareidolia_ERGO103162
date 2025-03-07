@@ -1,0 +1,4 @@
+5.9141 	ERROR 	numpy arrays used as textures should be in the range -1(black):1(white)
+5.9169 	EXP 	Created unnamed ImageStim = ImageStim(__class__=<class 'psychopy.visual.image.ImageStim'>, anchor=('center', 'center'), autoLog=True, color=array([1., 1., 1.]), colorSpace='rgb', contrast=1.0, depth=0, draggable=False, flipHoriz=False, flipVert=False, image=ndarray(...), interpolate=False, mask=None, maskParams=None, name='unnamed ImageStim', opacity=1, ori=0.0, pos=array([0., 0.]), size=array([0.2, 0.2]), texRes=128, units='norm', win=Window(...))
+5.9470 	INFO 	saved data to C:\Users\Sai\Desktop\Visual_Pareidolia_ERGO103162\data/participant_8907_20250307_103937.psydat
+5.9478 	INFO 	saved data to 'C:\\Users\\Sai\\Desktop\\Visual_Pareidolia_ERGO103162\\data/participant_8907_20250307_103937.csv'
