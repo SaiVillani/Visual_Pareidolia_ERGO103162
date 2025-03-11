@@ -83,6 +83,14 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         
         if filtered_array is not None:
             next_generation_parents.append(filtered_array)
+
+        #Save the selected stimulus as an image
+        selected_stim = create_image_from_array(win, selected_array)
+        filename = f"stimulus_gen_{generation}_trial{trial}.tiff"
+        selected_stim.save(f"{exp_handler.filename}_stimuli/{filename}")
+
+        #Add filename to data for easy reference
+        exp_handler.addData('stimulus_filename', filename)
         
         # Save data
         exp_handler.addData('session', 1)
@@ -163,6 +171,14 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
                     
                     if filtered_array is not None:
                         next_generation_parents.append(filtered_array)
+
+                    #save the selected stimulus as an image
+                    selected_stim = create_image_from_array(win, selected_array)
+                    filename = f"stimulus_gen_{generation}_trial{trial}.tiff"
+                    selected_stim.save(f"{exp_handler.filename}_stimuli/{filename}")
+
+                    #Add filename to data for easy reference
+                    exp_handler.addData('stimulus_filename', filename)
                     
                     # Save data
                     exp_handler.addData('session', 1)

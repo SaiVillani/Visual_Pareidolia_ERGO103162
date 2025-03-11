@@ -55,7 +55,7 @@ def create_stimuli_grid(stimuli, rows=3, cols=4):
     stim_height = 0.18
     
     # Increase spacing between stimuli
-    spacing_factor = 1.5  # More space between stimuli
+    spacing_factor = 1.0  # More space between stimuli
     
     # Calculate grid dimensions
     grid_width = cols * stim_width * spacing_factor

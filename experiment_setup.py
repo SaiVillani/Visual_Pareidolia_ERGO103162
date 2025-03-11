@@ -11,7 +11,7 @@ params = {
     "sessions": 1,
     "stim_size": 16,
     "inter_trial_interval": 0.2,
-    "mode" : "ideal_observer" # "manual" or "ideal_observer"
+    "mode" : "manual" # "manual" or "ideal_observer"
 }
 
 # Constants for filtering
@@ -56,7 +56,7 @@ def setup_experiment():
         size=(1000, 800),
         fullscr=exp_info['fullscreen'],
         screen=0,
-        allowGUI=False,
+        allowGUI=True,
         allowStencil=False,
         monitor='testMonitor',
         color='white',
@@ -68,5 +68,10 @@ def setup_experiment():
     # Set up logging
     logging.console.setLevel(logging.WARNING)
     log_file = logging.LogFile(f"{filename}.log", level=logging.INFO)
+
+    #create a directory for stimuli if it doesn't exist
+    stimuli_dir = f"{exp_handler.filename}.stimuli"
+    if not os.path.exists(stimuli_dir):
+        os.makedirs(stimuli_dir)
     
     return exp_handler, win, exp_info
