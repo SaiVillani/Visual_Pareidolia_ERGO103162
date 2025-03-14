@@ -5,6 +5,7 @@ from psychopy import event, core
 from stimuli import generate_noise_pattern, create_image_from_array
 from genetic_algorithm import filter_selection, generate_offspring, ideal_observer_select
 from ui_components import create_text_screen, create_stimuli_grid, show_message
+from data_saving import setup_participant_folders, save_selection_image, create_composite_image, save_composite_image
 from experiment_setup import params
 import numpy as np
 
@@ -16,9 +17,14 @@ next_generation_parents = []
 current_batches = None
 current_batch_index = 0
 
+#data saving bits
+participant_selections = {}  # Dictionary to store all selections by generation
+participant_dir = None
+timestamp = None
+
 def run_trial(win, exp_handler, generation, trial, target_stim, target_array=None):
     """Run a single trial of the main experiment"""
-    global current_batch_index, next_generation_parents
+    global current_batch_index, next_generation_parents, participant_selections
     
     # Get stimuli for this trial
     if generation == 0:
@@ -38,10 +44,10 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
             raise ValueError("Target array must be provided for ideal observer mode")
             
         # Show target
-        target_label = create_text_screen(win, "Target Letter (Ideal Observer Mode)", pos=(0, 0.7), height=0.05)
+        target_label = create_text_screen(win, "Target Letter (Ideal Observer Mode)", pos=(0, 0.8), height=0.05)
         target_label.draw()
         
-        target_stim.pos = (0, 0.55)
+        target_stim.pos = (0, 0.65)
         target_stim.draw()
         
         # Position stimuli in a grid
@@ -69,13 +75,20 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
             stim.draw()
         
         win.flip()
-        core.wait(0.5)  # Show selection briefly
+        core.wait(0.2)  # Show selection briefly
         
         # Get non-selected arrays for filtering
         non_selected_arrays = [stimuli_arrays[j] for j in range(12) if j != selected_id]
         
         # Apply filtering to selected image
         filtered_array = filter_selection(selected_array, non_selected_arrays)
+
+        #save the selection image
+        participant_id = exp_handler.extraInfo['participant']
+        save_selection_image(selected_array, participant_id, generation, trial, timestamp, participant_dir)
+
+        #track the selection for composites
+        participant_selections[generation].append(selected_array)
         
         # Add to parents for next generation
         if not next_generation_parents:
@@ -83,21 +96,13 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         
         if filtered_array is not None:
             next_generation_parents.append(filtered_array)
-
-        #Save the selected stimulus as an image
-        selected_stim = create_image_from_array(win, selected_array)
-        filename = f"stimulus_gen_{generation}_trial{trial}.tiff"
-        selected_stim.save(f"{exp_handler.filename}_stimuli/{filename}")
-
-        #Add filename to data for easy reference
-        exp_handler.addData('stimulus_filename', filename)
         
         # Save data
         exp_handler.addData('session', 1)
         exp_handler.addData('generation', generation)
         exp_handler.addData('trial', trial)
         exp_handler.addData('selected_id', selected_id)
-        exp_handler.addData('rt', 0.5)  # Simulated reaction time
+        exp_handler.addData('rt', 0.2)  # Simulated reaction time
         exp_handler.addData('mode', 'ideal_observer')
         exp_handler.nextEntry()
         
@@ -136,19 +141,31 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         target_stim.draw()
         
         # Check for hover and draw stimuli
+        # Inside the run_trial function, modify the hover detection code:
         mouse_pos = mouse.getPos()
         for i, stim in enumerate(stim_objects):
-            # Check if mouse is hovering over stimulus
-            if stim.contains(mouse_pos):
+            # Store original size for reference
+            if not hasattr(stim, 'original_size'):
+                stim.original_size = stim.size
+    
+                    # Check if mouse is hovering over stimulus with improved hit detection
+            stim_pos = stim.pos
+            stim_size = stim.size[0]  # Assuming square stimuli
+    
+            # Calculate distance from mouse to stimulus center
+            distance = np.sqrt((mouse_pos[0] - stim_pos[0])**2 + (mouse_pos[1] - stim_pos[1])**2)
+    
+            # If mouse is within the stimulus boundary
+            if distance < stim_size/2:
                 # Highlight stimulus
-                stim.setSize((0.22, 0.22))  # Make slightly larger when hovered
+                stim.setSize((stim.original_size[0] * 1.1, stim.original_size[1] * 1.1))
             else:
                 # Reset to normal size
-                stim.setSize((0.2, 0.2))
-            
+                stim.setSize(stim.original_size)
+    
             # Draw the stimulus
             stim.draw()
-        
+
         win.flip()
         
         # Check for clicks
@@ -164,6 +181,13 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
                     
                     # Apply filtering to selected image
                     filtered_array = filter_selection(selected_array, non_selected_arrays)
+
+                    #save the selection image
+                    participant_id = exp_handler.extraInfo['participant']
+                    save_selection_image(selected_array, participant_id, generation, trial, timestamp, participant_dir)
+
+                    #track the selection for composites
+                    participant_selections[generation].append(selected_array)
                     
                     # Add to parents for next generation
                     if not next_generation_parents:
@@ -171,14 +195,6 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
                     
                     if filtered_array is not None:
                         next_generation_parents.append(filtered_array)
-
-                    #save the selected stimulus as an image
-                    selected_stim = create_image_from_array(win, selected_array)
-                    filename = f"stimulus_gen_{generation}_trial{trial}.tiff"
-                    selected_stim.save(f"{exp_handler.filename}_stimuli/{filename}")
-
-                    #Add filename to data for easy reference
-                    exp_handler.addData('stimulus_filename', filename)
                     
                     # Save data
                     exp_handler.addData('session', 1)
@@ -205,6 +221,7 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None):
     """Run a complete session of the experiment"""
     global current_session, current_generation, current_parents
     global next_generation_parents, current_batches, current_batch_index
+    global participant_selections, participant_dir, timestamp
     
     # Initialize session variables
     current_session = session_num
@@ -212,6 +229,17 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None):
     next_generation_parents = []
     current_batches = None
     current_batch_index = 0
+    
+    # Initialize participant selections tracking
+    participant_selections = {gen: [] for gen in range(12)}
+    
+    # Create timestamp for this session
+    from datetime import datetime
+    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    
+    # Create participant folders
+    participant_id = exp_handler.extraInfo['participant']
+    participant_dir = setup_participant_folders(participant_id, timestamp)
     
     # Show session start message
     if params["mode"] == "manual":
@@ -238,7 +266,26 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None):
             # Generate offspring
             current_batches = generate_offspring(current_parents)
             current_batch_index = 0
+            
+            # Create and save composite for the previous generation
+            if participant_selections[gen-1]:
+                composite = create_composite_image(participant_selections[gen-1])
+                save_composite_image(composite, participant_id, gen-1, timestamp, participant_dir)
         
         # Run all trials for this generation
         for trial in range(12):  # 12 trials per generation
             run_trial(win, exp_handler, gen, trial, target_stim, target_array)
+    
+    # Create and save composite for the last generation
+    if participant_selections[11]:
+        composite = create_composite_image(participant_selections[11])
+        save_composite_image(composite, participant_id, 11, timestamp, participant_dir)
+    
+    # Create and save mega-composite of all selections
+    all_selections = []
+    for gen in range(12):
+        all_selections.extend(participant_selections[gen])
+    
+    if all_selections:
+        mega_composite = create_composite_image(all_selections)
+        save_composite_image(mega_composite, participant_id, None, timestamp, participant_dir)

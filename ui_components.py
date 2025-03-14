@@ -28,9 +28,10 @@ def show_message(win, message, button_text="Continue", height=0.05):
         width=0.4,
         height=0.1,
         fillColor='green',
-        pos=(0, -0.7)
+        pos=(0, -0.4),
+        units = 'height'
     )
-    button_label = create_text_screen(win, button_text, pos=(0, -0.7), height=0.05, color='white')
+    button_label = create_text_screen(win, button_text, pos=(0, -0.4), height=0.05, color='white')
     
     mouse = event.Mouse(visible=True, win=win)
     
@@ -51,11 +52,11 @@ def show_message(win, message, button_text="Continue", height=0.05):
 def create_stimuli_grid(stimuli, rows=3, cols=4):
     """Create a grid of stimuli and return their positions"""
     positions = []
-    stim_width = 0.18  # Adjust as needed
-    stim_height = 0.18
+    stim_width = 0.15  # Adjust as needed
+    stim_height = 0.15
     
     # Increase spacing between stimuli
-    spacing_factor = 1.0  # More space between stimuli
+    spacing_factor = 1.3  # More space between stimuli
     
     # Calculate grid dimensions
     grid_width = cols * stim_width * spacing_factor
@@ -63,7 +64,7 @@ def create_stimuli_grid(stimuli, rows=3, cols=4):
     
     # Calculate starting position (top-left of grid)
     start_x = -grid_width / 2 + stim_width / 2
-    start_y = grid_height / 2 - stim_height / 2
+    start_y = 0.1 #grid_height / 2 - stim_height / 2
     
     # Position each stimulus
     for row in range(rows):
@@ -115,8 +116,8 @@ def run_introduction(win, training_target_stim):
     training_instructions = create_text_screen(win, training_text, pos=(0, -0.1), height=0.04)
     training_instructions.draw()
     
-    button = visual.Rect(win=win, width=0.4, height=0.1, fillColor='green', pos=(0, -0.7))
-    button_label = create_text_screen(win, "Begin Training", pos=(0, -0.7), height=0.05, color='white')
+    button = visual.Rect(win=win, width=0.4, height=0.1, fillColor='green', pos=(0, -0.4), units='height')
+    button_label = create_text_screen(win, "Begin Training", pos=(0, -0.4), height=0.05, color='white')
     
     button.draw()
     button_label.draw()

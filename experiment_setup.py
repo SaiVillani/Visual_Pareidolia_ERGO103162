@@ -6,12 +6,12 @@ from datetime import datetime
 
 # Experimental parameters
 params = {
-    "generations": 120,
+    "generations": 12,
     "trials_per_gen": 12,
     "sessions": 1,
     "stim_size": 16,
     "inter_trial_interval": 0.2,
-    "mode" : "manual" # "manual" or "ideal_observer"
+    "mode" : "ideal_observer" # "manual" or "ideal_observer"
 }
 
 # Constants for filtering
@@ -53,25 +53,21 @@ def setup_experiment():
     
     # Setup the window
     win = visual.Window(
-        size=(1000, 800),
+        size=(1920, 1080),
         fullscr=exp_info['fullscreen'],
         screen=0,
         allowGUI=True,
         allowStencil=False,
-        monitor='testMonitor',
+        monitor='SAMSUNG',
         color='white',
         colorSpace='rgb',
         blendMode='avg',
-        useFBO=True
+        useFBO=True,
+        units='height'
     )
     
     # Set up logging
     logging.console.setLevel(logging.WARNING)
     log_file = logging.LogFile(f"{filename}.log", level=logging.INFO)
-
-    #create a directory for stimuli if it doesn't exist
-    stimuli_dir = f"{exp_handler.filename}.stimuli"
-    if not os.path.exists(stimuli_dir):
-        os.makedirs(stimuli_dir)
     
     return exp_handler, win, exp_info

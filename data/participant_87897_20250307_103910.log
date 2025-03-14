@@ -1,5 +1,0 @@
-6.1523 	WARNING 	User requested fullscreen with size [1000  800], but screen is actually [2160, 3840]. Using actual size
-7.4979 	ERROR 	numpy arrays used as textures should be in the range -1(black):1(white)
-7.5007 	EXP 	Created unnamed ImageStim = ImageStim(__class__=<class 'psychopy.visual.image.ImageStim'>, anchor=('center', 'center'), autoLog=True, color=array([1., 1., 1.]), colorSpace='rgb', contrast=1.0, depth=0, draggable=False, flipHoriz=False, flipVert=False, image=ndarray(...), interpolate=False, mask=None, maskParams=None, name='unnamed ImageStim', opacity=1, ori=0.0, pos=array([0., 0.]), size=array([0.2, 0.2]), texRes=128, units='norm', win=Window(...))
-7.5333 	INFO 	saved data to C:\Users\Sai\Desktop\Visual_Pareidolia_ERGO103162\data/participant_87897_20250307_103910.psydat
-7.5339 	INFO 	saved data to 'C:\\Users\\Sai\\Desktop\\Visual_Pareidolia_ERGO103162\\data/participant_87897_20250307_103910.csv'

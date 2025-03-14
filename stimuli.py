@@ -24,7 +24,7 @@ def create_image_from_array(win, array):
     stim = visual.ImageStim(
         win=win,
         image=normalized_array,
-        size=(0.15, 0.15),  # Fixed size relative to window height
+        size=(0.2, 0.2),  # Fixed size relative to window height
         units='height',   # Use height units to maintain aspect ratio
         interpolate=False # Disable interpolation for pixelated look
     )

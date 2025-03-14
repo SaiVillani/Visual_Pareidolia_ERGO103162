@@ -1,6 +1,6 @@
 #genetic_algorithm.py
 
-from tkinter import Image
+from PIL import Image
 import numpy as np
 import random
 
