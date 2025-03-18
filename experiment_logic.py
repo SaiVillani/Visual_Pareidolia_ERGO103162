@@ -7,6 +7,7 @@ from genetic_algorithm import filter_selection, generate_offspring, ideal_observ
 from ui_components import create_text_screen, create_stimuli_grid, show_message
 from data_saving import setup_participant_folders, save_selection_image, create_composite_image, save_composite_image
 from experiment_setup import params
+from debug_utils import debug_element
 import numpy as np
 
 # Global variables for tracking experiment state
@@ -37,6 +38,17 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
 
     # Create PsychoPy stimuli from arrays
     stim_objects = [create_image_from_array(win, array) for array in stimuli_arrays]
+
+    # Debug mode - add this near the beginning of the function
+    if params["debug"] and trial == 0 and generation == 0:
+        # Debug target elements
+        debug_element(win, target_label, "target_label")
+        debug_element(win, target_stim, "target_stim")
+        
+        # Debug grid layout
+        for i, stim in enumerate(stim_objects):
+            if not debug_element(win, stim, f"stimulus_{i}"):
+                break
     
     # If in ideal observer mode, select the most similar stimulus automatically
     if params["mode"] == "ideal_observer":
@@ -46,7 +58,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         # Show target
         target_label = create_text_screen(win, "Target Letter (Ideal Observer Mode)", pos=(0, 0.8), height=0.05)
         target_label.draw()
-        
+
         target_stim.pos = (0, 0.65)
         target_stim.draw()
         

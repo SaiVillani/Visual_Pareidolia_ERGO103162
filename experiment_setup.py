@@ -6,13 +6,15 @@ from datetime import datetime
 
 # Experimental parameters
 params = {
-    "generations": 12,
+    "generations": 2,
     "trials_per_gen": 12,
     "sessions": 1,
     "stim_size": 16,
     "inter_trial_interval": 0.2,
-    "mode" : "ideal_observer" # "manual" or "ideal_observer"
+    "mode" : "manual", # "manual" or "ideal_observer"
+    "debug": True
 }
+
 
 # Constants for filtering
 SINGLE_TRIAL_INSTANCE = True

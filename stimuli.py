@@ -24,12 +24,13 @@ def create_image_from_array(win, array):
     stim = visual.ImageStim(
         win=win,
         image=normalized_array,
-        size=(0.2, 0.2),  # Fixed size relative to window height
+        size=(0.14, 0.14),  # Reduced size to prevent clipping
         units='height',   # Use height units to maintain aspect ratio
         interpolate=False # Disable interpolation for pixelated look
     )
     
     return stim
+
 
 
 def create_target_s():

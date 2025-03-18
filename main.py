@@ -31,6 +31,11 @@ def main():
         
         # Run main session
         run_session(win, exp_handler, 1, target_stim, target_array)
+
+        # Run rating task
+        if params["mode"] == "manual":
+            from rating_task import run_rating_task
+            run_rating_task(win, exp_handler)
         
         # Show debrief (skip in ideal observer mode)
         if params["mode"] == "manual":

@@ -25,8 +25,8 @@ def show_message(win, message, button_text="Continue", height=0.05):
     text_stim = create_text_screen(win, message, pos=(0, 0.1), height=height)
     button = visual.Rect(
         win=win,
-        width=0.4,
-        height=0.1,
+        width=0.3,
+        height=0.08,
         fillColor='green',
         pos=(0, -0.4),
         units = 'height'
@@ -52,28 +52,28 @@ def show_message(win, message, button_text="Continue", height=0.05):
 def create_stimuli_grid(stimuli, rows=3, cols=4):
     """Create a grid of stimuli and return their positions"""
     positions = []
-    stim_width = 0.15  # Adjust as needed
-    stim_height = 0.15
     
-    # Increase spacing between stimuli
-    spacing_factor = 1.3  # More space between stimuli
+    # Calculate grid dimensions based on window height
+    grid_width = 0.8  # 80% of window width
+    grid_height = 0.6  # 60% of window height
     
-    # Calculate grid dimensions
-    grid_width = cols * stim_width * spacing_factor
-    grid_height = rows * stim_height * spacing_factor
+    # Calculate spacing between stimuli
+    x_spacing = grid_width / cols
+    y_spacing = grid_height / rows
     
     # Calculate starting position (top-left of grid)
-    start_x = -grid_width / 2 + stim_width / 2
-    start_y = 0.1 #grid_height / 2 - stim_height / 2
+    start_x = -grid_width / 2 + x_spacing / 2
+    start_y = 0.3  # Position grid below the target
     
     # Position each stimulus
     for row in range(rows):
         for col in range(cols):
-            x = start_x + col * stim_width * spacing_factor
-            y = start_y - row * stim_height * spacing_factor
+            x = start_x + col * x_spacing
+            y = start_y - row * y_spacing
             positions.append((x, y))
     
     return positions
+
 
 
 def run_introduction(win, training_target_stim):
@@ -139,12 +139,12 @@ def run_training_trials(win, exp_handler):
     
     training_target_stim = create_image_from_array(win, create_training_target_j())
     
-    for trial_number in range(1, 13):  # Changed to 12 trials
-        # Create stimuli for this trial
+    for trial_number in range(1, 13):
+        # Create stimuli for this trial 
         stimuli = []
-        target_index = random.randint(0, 11)  # Changed to 0-11 range
+        target_index = random.randint(0, 11)
         
-        for i in range(12):  # Changed to 12 stimuli
+        for i in range(12):
             if i == target_index:
                 stim_array = create_training_stimulus(True, trial_number)
             else:
@@ -153,17 +153,18 @@ def run_training_trials(win, exp_handler):
             stim = create_image_from_array(win, stim_array)
             stimuli.append(stim)
         
-        # Show target
-        target_label = create_text_screen(win, "Target Letter", pos=(0, 0.7), height=0.05)
+        # Show target - adjusted position
+        target_label = create_text_screen(win, "Target Letter", pos=(0, 0.8), height=0.05)
         target_label.draw()
         
-        training_target_stim.pos = (0, 0.55)
+        training_target_stim.pos = (0, 0.65)
         training_target_stim.draw()
         
-        # Position stimuli in a grid
-        positions = create_stimuli_grid(stimuli, rows=3, cols=4)  # Changed to 3×4 grid
+        # Position stimuli in a grid - using improved grid function
+        positions = create_stimuli_grid(stimuli, rows=3, cols=4)
         for i, stim in enumerate(stimuli):
             stim.pos = positions[i]
+            stim.setSize((0.14, 0.14))  # Consistent size
             stim.draw()
         
         win.flip()
@@ -192,7 +193,7 @@ def run_training_trials(win, exp_handler):
                     stim.setSize((0.22, 0.22))  # Make slightly larger when hovered
                 else:
                     # Reset to normal size
-                    stim.setSize((0.2, 0.2))
+                    stim.setSize((0.14, 0.14))
                 
                 # Draw the stimulus
                 stim.draw()
