@@ -56,12 +56,12 @@ def main():
             run_introduction(win, training_target_stim, debug_mode)
             
         # Run training trials
-        if params["mode"] == "manual" and (not debug_mode or debug_section == 2):
-            run_training_trials(win, exp_handler, debug_mode)
+        #if params["mode"] == "manual" and (not debug_mode or debug_section == 2):
+        #    run_training_trials(win, exp_handler, debug_mode)
         
         # Run main session
-        if not debug_mode or debug_section == 3:
-            run_session(win, exp_handler, 1, target_stim, target_array, debug_mode)
+        #if not debug_mode or debug_section == 3:
+        #    run_session(win, exp_handler, 1, target_stim, target_array, debug_mode)
 
         # Run rating task
         if params["mode"] == "manual" and (not debug_mode or debug_section == 4):
