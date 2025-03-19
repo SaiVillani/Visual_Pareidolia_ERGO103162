@@ -12,9 +12,8 @@ params = {
     "stim_size": 16,
     "inter_trial_interval": 0.2,
     "mode" : "manual", # "manual" or "ideal_observer"
-    "debug": True
+    "debug": False
 }
-
 
 # Constants for filtering
 SINGLE_TRIAL_INSTANCE = True

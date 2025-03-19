@@ -23,13 +23,13 @@ Let you adjust it with keyboard controls
 Return when you press Enter or Escape
 
 """
-from psychopy import event, visual
+from psychopy import event, visual, core
 import numpy as np
 import json
 import os
 
-def debug_element(win, element, name="element"):
-    """Show debug info for an element and allow position/size adjustments"""
+def debug_element(win, element, name="element", element_index=0, total_elements=1):
+    """Show debug info for an element and allow position/size adjustments with navigation"""
     # Create debug overlay
     outline = visual.Rect(
         win=win,
@@ -51,8 +51,16 @@ def debug_element(win, element, name="element"):
     
     help_text = visual.TextStim(
         win=win,
-        text="Arrow keys: move | +/- keys: resize | Enter: save | Escape: cancel",
+        text="Arrow keys: move | +/- keys: resize | Enter: next | Backspace: previous | S: save | Escape: cancel",
         pos=[0, -0.45],
+        height=0.02,
+        color='black'
+    )
+    
+    navigation_text = visual.TextStim(
+        win=win,
+        text=f"Element {element_index+1} of {total_elements}",
+        pos=[0, -0.5],
         height=0.02,
         color='black'
     )
@@ -61,7 +69,7 @@ def debug_element(win, element, name="element"):
     step_size = 0.01
     size_step = 0.01
     
-    print(f"Debugging {name}. Use arrow keys to adjust position, +/- to adjust size, Enter to continue")
+    print(f"Debugging {name}. Use arrow keys to adjust position, +/- to adjust size, Enter to continue, Backspace to go back")
     
     while True:
         # Draw the element and debug info
@@ -74,15 +82,20 @@ def debug_element(win, element, name="element"):
             info_text.text += f", size=({element.size[0]:.2f}, {element.size[1]:.2f})"
         info_text.draw()
         help_text.draw()
+        navigation_text.draw()
         win.flip()
         
         # Check for key presses
         keys = event.waitKeys()
         
         if 'escape' in keys:
-            return False  # Cancel debugging
+            return "cancel"  # Cancel debugging
         elif 'return' in keys:
-            return True  # Continue to next element
+            return "next"    # Move to next element
+        elif 'backspace' in keys:
+            return "previous"  # Go back to previous element
+        elif 's' in keys:
+            return "save"    # Save and exit
         elif 'up' in keys:
             element.pos = (element.pos[0], element.pos[1] + step_size)
         elif 'down' in keys:
@@ -90,7 +103,7 @@ def debug_element(win, element, name="element"):
         elif 'left' in keys:
             element.pos = (element.pos[0] - step_size, element.pos[1])
         elif 'right' in keys:
-            element.pos = (element.pos[0] + step_size, element.pos[1])
+            element.pos = (element.pos[0] + step_step, element.pos[1])
         elif 'equal' in keys or 'plus' in keys:
             if hasattr(element, 'size'):
                 element.setSize((element.size[0] + size_step, element.size[1] + size_step))
@@ -146,20 +159,40 @@ def load_layout(elements_dict, filename="layout.json"):
         return False
 
 def debug_ui_section(win, elements_dict, section_name):
-    """Debug all elements in a section and save their layout"""
+    """Debug all elements in a section with navigation and save their layout"""
     print(f"Debugging {section_name} UI elements")
     
     # Try to load existing layout first
     layout_file = f"{section_name}_layout.json"
     loaded = load_layout(elements_dict, layout_file)
     
-    # Debug each element
-    for name, element in elements_dict.items():
-        print(f"Debugging {name}...")
-        if not debug_element(win, element, name):
+    # Convert dictionary to list for ordered navigation
+    element_names = list(elements_dict.keys())
+    element_objects = [elements_dict[name] for name in element_names]
+    total_elements = len(element_names)
+    
+    # Start with the first element
+    current_index = 0
+    
+    while 0 <= current_index < total_elements:
+        name = element_names[current_index]
+        element = element_objects[current_index]
+        
+        print(f"Debugging {name} ({current_index+1}/{total_elements})...")
+        result = debug_element(win, element, name, current_index, total_elements)
+        
+        if result == "next":
+            current_index += 1
+        elif result == "previous":
+            current_index -= 1
+        elif result == "save":
+            # Save the layout and exit
+            save_layout(elements_dict, layout_file)
+            return True
+        elif result == "cancel":
             print("Debugging canceled")
             return False
     
-    # Save the layout
+    # If we've gone through all elements
     save_layout(elements_dict, layout_file)
     return True

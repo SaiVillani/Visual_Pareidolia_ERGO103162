@@ -111,32 +111,38 @@ def create_training_stimulus(has_target, trial_number, stim_size=16):
     
     if has_target:
         # Start very visible and fade out over trials
-        visibility = max(0.15, 1.9 - ((trial_number - 1) * 0.15))
+        visibility = max(0.8, 3 - ((trial_number - 1) * 0.10)) # min, max - (trial - 1) * step
         
         # Create a canvas with the letter 'J'
         img = Image.new('L', (stim_size, stim_size), color=255)
         draw = ImageDraw.Draw(img)
         
         try:
-            font_size = int(stim_size * 0.8)
+            # Increase font size for better visibility
+            font_size = int(stim_size * 1.0)  # Increased from 0.8 to 1.0
             font = ImageFont.truetype("arial.ttf", font_size)
         except IOError:
             font = ImageFont.load_default()
         
-        # Draw the letter 'J'
+        # Draw the letter 'J' - centered properly
         try:
-            draw.text((stim_size/1.5, stim_size/1.5), "J", 
+            # Center the J in the image (stim_size/2, stim_size/2)
+            draw.text((stim_size/2, stim_size/2), "J", 
                       fill=0, font=font, anchor="mm")
         except TypeError:
             text_width, text_height = font.getsize("J")
-            x = stim_size/1.5 - text_width//2
-            y = stim_size/1.5 - text_height//2
+            # Properly center the text
+            x = stim_size/2 - text_width//2
+            y = stim_size/2 - text_height//2
             draw.text((x, y), "J", fill=0, font=font)
         
         letter_array = np.flipud(np.array(img))
         
         # Create a mask where the letter is (values < 255)
         mask = (letter_array < 255)
+        
+        # Enhance contrast - make the letter darker (closer to 0)
+        letter_array[mask] = np.maximum(0, letter_array[mask] - 50)
         
         # Blend the letter with noise using visibility as a weight
         blended = noise.copy()
@@ -150,7 +156,21 @@ def create_training_stimulus(has_target, trial_number, stim_size=16):
             letter_value = letter_array[i, j]
             
             # Blend more towards the letter value when visibility is high
-            blended[i, j] = int((1 - visibility) * original_value + visibility * letter_value)
+            # Enhance the contrast by making the letter even darker
+            blended[i, j] = int((1 - visibility) * original_value + visibility * max(0, letter_value - 50))
+        
+        # Add a border around the letter for extra visibility
+        border_mask = np.zeros_like(blended, dtype=bool)
+        for i, j in zip(*letter_pixels):
+            for di in [-1, 0, 1]:
+                for dj in [-1, 0, 1]:
+                    ni, nj = i + di, j + dj
+                    if 0 <= ni < stim_size and 0 <= nj < stim_size and not mask[ni, nj]:
+                        border_mask[ni, nj] = True
+        
+        # Make the border darker to create contrast
+        for i, j in zip(*np.where(border_mask)):
+            blended[i, j] = min(255, blended[i, j] + 50)
         
         return blended
     

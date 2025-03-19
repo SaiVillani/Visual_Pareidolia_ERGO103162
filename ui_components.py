@@ -20,7 +20,7 @@ def create_text_screen(win, text, pos=(0, 0), height=0.05, color='black'):
         depth=0.0
     )
 
-def show_message(win, message, button_text="Continue", height=0.05):
+def show_message(win, message, button_text="Continue", height=0.05, debug_mode=False):
     """Display a message with a continue button"""
     text_stim = create_text_screen(win, message, pos=(0, 0.1), height=height)
     button = visual.Rect(
@@ -29,9 +29,23 @@ def show_message(win, message, button_text="Continue", height=0.05):
         height=0.08,
         fillColor='green',
         pos=(0, -0.4),
-        units = 'height'
+        units='height'
     )
     button_label = create_text_screen(win, button_text, pos=(0, -0.4), height=0.05, color='white')
+    
+    # If in debug mode, allow adjusting the UI elements
+    if debug_mode:
+        from debug_utils import debug_ui_section
+        
+        # Create a dictionary of all UI elements
+        ui_elements = {
+            "text_stim": text_stim,
+            "button": button,
+            "button_label": button_label
+        }
+        
+        # Debug the UI elements
+        debug_ui_section(win, ui_elements, "message_screen")
     
     mouse = event.Mouse(visible=True, win=win)
     
@@ -63,7 +77,7 @@ def create_stimuli_grid(stimuli, rows=3, cols=4):
     
     # Calculate starting position (top-left of grid)
     start_x = -grid_width / 2 + x_spacing / 2
-    start_y = 0.3  # Position grid below the target
+    start_y = 0.15  # Position grid below the target
     
     # Position each stimulus
     for row in range(rows):
@@ -74,9 +88,7 @@ def create_stimuli_grid(stimuli, rows=3, cols=4):
     
     return positions
 
-
-
-def run_introduction(win, training_target_stim):
+def run_introduction(win, training_target_stim, debug_mode=False):
     """Show introduction screens"""
     # Welcome screen
     intro_text = """
@@ -92,7 +104,7 @@ def run_introduction(win, training_target_stim):
     
     To make your selection, simply click on your chosen pattern with your mouse.
     """
-    show_message(win, intro_text)
+    show_message(win, intro_text, debug_mode=debug_mode)
     
     # Training instructions
     training_text = """
@@ -103,22 +115,42 @@ def run_introduction(win, training_target_stim):
     During training, the patterns will start very clear and become gradually more subtle. 
     This helps you learn what to look for in visual noise.
     
+
+
+
+
     Important Note: The training patterns are designed to be easier to see than those 
     in the main experiment.
     
     Take your time with each selection - there's no time limit.
     """
     
-    # Show training target
-    training_target_stim.pos = (0, 0.3)
-    training_target_stim.draw()
-    
-    training_instructions = create_text_screen(win, training_text, pos=(0, -0.1), height=0.04)
-    training_instructions.draw()
-    
+    # Create UI elements
+    training_instructions = create_text_screen(win, training_text, pos=(0, 0.12), height=0.04)
     button = visual.Rect(win=win, width=0.4, height=0.1, fillColor='green', pos=(0, -0.4), units='height')
     button_label = create_text_screen(win, "Begin Training", pos=(0, -0.4), height=0.05, color='white')
     
+    # Set target position
+    training_target_stim.pos = (0, 0.10)
+    
+    # If in debug mode, allow adjusting the UI elements
+    if debug_mode:
+        from debug_utils import debug_ui_section
+        
+        # Create a dictionary of all UI elements
+        ui_elements = {
+            "training_instructions": training_instructions,
+            "training_target_stim": training_target_stim,
+            "button": button,
+            "button_label": button_label
+        }
+        
+        # Debug the UI elements
+        debug_ui_section(win, ui_elements, "introduction")
+    
+    # Draw elements
+    training_target_stim.draw()
+    training_instructions.draw()
     button.draw()
     button_label.draw()
     win.flip()
@@ -133,7 +165,7 @@ def run_introduction(win, training_target_stim):
             win.close()
             core.quit()
 
-def run_training_trials(win, exp_handler):
+def run_training_trials(win, exp_handler, debug_mode=False):
     """Run the training trials"""
     from stimuli import create_training_stimulus, create_image_from_array, create_training_target_j
     
@@ -153,20 +185,38 @@ def run_training_trials(win, exp_handler):
             stim = create_image_from_array(win, stim_array)
             stimuli.append(stim)
         
-        # Show target - adjusted position
+        # Create UI elements
         target_label = create_text_screen(win, "Target Letter", pos=(0, 0.8), height=0.05)
-        target_label.draw()
+        training_target_stim.pos = (0, 0.35)
         
-        training_target_stim.pos = (0, 0.65)
-        training_target_stim.draw()
-        
-        # Position stimuli in a grid - using improved grid function
+        # Position stimuli in a grid
         positions = create_stimuli_grid(stimuli, rows=3, cols=4)
         for i, stim in enumerate(stimuli):
             stim.pos = positions[i]
             stim.setSize((0.14, 0.14))  # Consistent size
-            stim.draw()
         
+        # If in debug mode and this is the first trial, allow adjusting the UI elements
+        if debug_mode and trial_number == 1:
+            from debug_utils import debug_ui_section
+            
+            # Create a dictionary of all UI elements
+            ui_elements = {
+                "target_label": target_label,
+                "training_target_stim": training_target_stim
+            }
+            
+            # Add stimuli to the UI elements dictionary
+            for i, stim in enumerate(stimuli):
+                ui_elements[f"stimulus_{i}"] = stim
+            
+            # Debug the UI elements
+            debug_ui_section(win, ui_elements, "training_trial")
+        
+        # Draw elements
+        #target_label.draw()
+        training_target_stim.draw()
+        for i, stim in enumerate(stimuli):
+            stim.draw()
         win.flip()
         
         # Wait for mouse click on a stimulus
@@ -237,14 +287,14 @@ def run_training_trials(win, exp_handler):
     
     Now you will begin the main experiment. Your task is to find patterns 
     that resemble the letter 'S'.
-    
+
     The patterns will be more subtle than in training - this is normal.
     
     If you can't clearly see an 'S', choose the pattern that feels most 'S-like'.
     """
-    show_message(win, training_complete_text)
+    show_message(win, training_complete_text, debug_mode=debug_mode)
 
-def show_break(win):
+def show_break(win, debug_mode=False):
     """Show break screen between sessions"""
     break_text = """
     Break Time
@@ -256,9 +306,9 @@ def show_break(win):
     The second session will be identical to the first one. 
     Remember to keep looking for patterns that resemble the letter 'S'.
     """
-    show_message(win, break_text)
+    show_message(win, break_text, debug_mode=debug_mode)
 
-def show_debrief(win):
+def show_debrief(win, debug_mode=False):
     """Show the debrief screen"""
     debrief_text = """
     Thank You for Participating!
@@ -278,4 +328,4 @@ def show_debrief(win):
     
     Thank you again for your participation!
     """
-    show_message(win, debrief_text, "Exit")
+    show_message(win, debrief_text, "Exit", debug_mode=debug_mode)

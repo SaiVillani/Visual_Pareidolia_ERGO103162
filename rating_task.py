@@ -1,10 +1,12 @@
+#rating_task.py
+
+
 import os
 import random
 import numpy as np
 from psychopy import visual, event, core
 from PIL import Image
 from experiment_setup import params
-from debug_utils import debug_element
 from ui_components import create_text_screen, show_message
 
 def load_tiff_image(filepath):
@@ -80,7 +82,7 @@ def create_image_from_array(win, array):
     
     return stim
 
-def run_rating_task(win, exp_handler):
+def run_rating_task(win, exp_handler, debug_mode=False):
     """Run the rating task for composite images"""
     # Show introduction to rating task
     intro_text = """
@@ -108,28 +110,31 @@ def run_rating_task(win, exp_handler):
         show_message(win, f"Error loading images: {e}\nThe experiment will now end.")
         return
     
-    # Create rating scale with adjusted position and size
+    # Create rating scale with improved visibility
     rating_scale = visual.Slider(
         win=win,
         ticks=(1, 2, 3, 4, 5, 6, 7),
-        labels=["Not an S at all", "", "", "Neutral", "", "", "Very clearly an S"],
+        labels=["Not an S", "", "Somewhat", "", "Very clearly an S"],
         granularity=0.1,
-        pos=(0, -0.2),  # Moved up slightly
-        size=(0.7, 0.05),  # Slightly smaller width
+        pos=(0, -0.2),
+        size=(0.6, 0.05),
         style=['rating'],
         color='black',
-        fillColor='darkgrey',
-        borderColor='white',
-        labelHeight=0.04  # Smaller labels
+        fillColor='lightgrey',  # Lighter fill color for better visibility
+        borderColor='black',    # Darker border
+        labelHeight=0.01,       # Smaller labels
+        labelColor='black',     # Ensure labels are visible
+        markerColor='red',      # Make marker stand out
+        lineColor='black'       # Ensure line is visible
     )
     
     # Create submit button with adjusted position
     submit_button = visual.Rect(
         win=win,
         width=0.2,
-        height=0.08,  # Slightly smaller
+        height=0.08,
         fillColor='green',
-        pos=(0, -0.4),  # Moved up
+        pos=(0, -0.4),
         units='height'
     )
     submit_label = create_text_screen(win, "Submit", pos=(0, -0.4), height=0.04, color='white')
@@ -137,22 +142,14 @@ def run_rating_task(win, exp_handler):
     # Create progress text with adjusted position
     progress_text = create_text_screen(win, "", pos=(0, -0.55), height=0.03)
     
-    # Process each image
-    mouse = event.Mouse(visible=True, win=win)
-    total_images = len(image_data)
-    
-    for i, (img_array, img_metadata) in enumerate(image_data):
-        # Create image stimulus with adjusted position
-        img_stim = create_image_from_array(win, img_array)
-        img_stim.pos = (0, 0.25)  # Moved up slightly
-        img_stim.setSize((0.25, 0.25))  # Larger for rating task
+    # If in debug mode, create a sample image and debug the UI
+    if debug_mode:
+        from debug_utils import debug_ui_section
         
-        # Reset rating scale for new image
-        rating_scale.rating = None
-        rating_scale.markerPos = None
-        
-        # Update progress text
-        progress_text.text = f"Image {i+1} of {total_images}"
+        # Create a sample image for debugging
+        sample_img_array = np.ones((16, 16), dtype=np.uint8) * 128
+        img_stim = create_image_from_array(win, sample_img_array)
+        img_stim.pos = (0, 0.20)
         
         # Create instruction text
         instruction = create_text_screen(
@@ -161,15 +158,45 @@ def run_rating_task(win, exp_handler):
             pos=(0, 0.5), 
             height=0.05
         )
-
-        # Debug mode - add after creating UI elements but before the main loop
-        if params["debug"]:
-            debug_element(win, img_stim, "image_stimulus")
-            debug_element(win, instruction, "instruction_text")
-            debug_element(win, rating_scale, "rating_scale")
-            debug_element(win, submit_button, "submit_button")
-            debug_element(win, submit_label, "submit_label")
-            debug_element(win, progress_text, "progress_text")
+        
+        # Create a dictionary of all UI elements
+        ui_elements = {
+            "image_stimulus": img_stim,
+            "instruction": instruction,
+            "rating_scale": rating_scale,
+            "submit_button": submit_button,
+            "submit_label": submit_label,
+            "progress_text": progress_text
+        }
+        
+        # Debug the UI elements
+        debug_ui_section(win, ui_elements, "rating_task")
+    
+    # Process each image
+    mouse = event.Mouse(visible=True, win=win)
+    total_images = len(image_data)
+    
+    for i, (img_array, img_metadata) in enumerate(image_data):
+        # Create image stimulus with adjusted position
+        img_stim = create_image_from_array(win, img_array)
+        img_stim.pos = (0, 0.15)
+        img_stim.setSize((0.25, 0.25))
+        
+        # Reset rating scale for new image
+        rating_scale.rating = None
+        # Set an initial marker position (middle of scale)
+        rating_scale.markerPos = 0.5
+        
+        # Update progress text
+        progress_text.text = f"Image {i+1} of {total_images}"
+        
+        # Create instruction text
+        instruction = create_text_screen(
+            win, 
+            "Rate how much this image resembles the letter 'S':", 
+            pos=(0, 0.4), 
+            height=0.05
+        )
         
         # Wait for rating and submission
         submitted = False

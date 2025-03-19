@@ -1,13 +1,11 @@
 #experiment_logic.py
 
-
 from psychopy import event, core
 from stimuli import generate_noise_pattern, create_image_from_array
 from genetic_algorithm import filter_selection, generate_offspring, ideal_observer_select
 from ui_components import create_text_screen, create_stimuli_grid, show_message
 from data_saving import setup_participant_folders, save_selection_image, create_composite_image, save_composite_image
 from experiment_setup import params
-from debug_utils import debug_element
 import numpy as np
 
 # Global variables for tracking experiment state
@@ -23,7 +21,7 @@ participant_selections = {}  # Dictionary to store all selections by generation
 participant_dir = None
 timestamp = None
 
-def run_trial(win, exp_handler, generation, trial, target_stim, target_array=None):
+def run_trial(win, exp_handler, generation, trial, target_stim, target_array=None, debug_mode=False):
     """Run a single trial of the main experiment"""
     global current_batch_index, next_generation_parents, participant_selections
     
@@ -38,17 +36,26 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
 
     # Create PsychoPy stimuli from arrays
     stim_objects = [create_image_from_array(win, array) for array in stimuli_arrays]
-
-    # Debug mode - add this near the beginning of the function
-    if params["debug"] and trial == 0 and generation == 0:
-        # Debug target elements
-        debug_element(win, target_label, "target_label")
-        debug_element(win, target_stim, "target_stim")
+    
+    # Show target
+    target_label = create_text_screen(win, "Target Letter", pos=(0, 0.7), height=0.05)
+    
+    # If in debug mode, allow adjusting the UI elements
+    if debug_mode:
+        from debug_utils import debug_ui_section
         
-        # Debug grid layout
+        # Create a dictionary of all UI elements
+        ui_elements = {
+            "target_label": target_label,
+            "target_stim": target_stim
+        }
+        
+        # Add stimuli to the UI elements dictionary
         for i, stim in enumerate(stim_objects):
-            if not debug_element(win, stim, f"stimulus_{i}"):
-                break
+            ui_elements[f"stimulus_{i}"] = stim
+        
+        # Debug the UI elements
+        debug_ui_section(win, ui_elements, "main_task")
     
     # If in ideal observer mode, select the most similar stimulus automatically
     if params["mode"] == "ideal_observer":
@@ -57,9 +64,9 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
             
         # Show target
         target_label = create_text_screen(win, "Target Letter (Ideal Observer Mode)", pos=(0, 0.8), height=0.05)
-        target_label.draw()
+        #target_label.draw()
 
-        target_stim.pos = (0, 0.65)
+        target_stim.pos = (0, 0.35)
         target_stim.draw()
         
         # Position stimuli in a grid
@@ -124,10 +131,9 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         
     # Manual mode - rest of the function as before
     # Show target
-    target_label = create_text_screen(win, "Target Letter", pos=(0, 0.7), height=0.05)
-    target_label.draw()
+    #target_label.draw()
     
-    target_stim.pos = (0, 0.55)
+    target_stim.pos = (0, 0.35)
     target_stim.draw()
     
     # Position stimuli in a grid
@@ -153,14 +159,13 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         target_stim.draw()
         
         # Check for hover and draw stimuli
-        # Inside the run_trial function, modify the hover detection code:
         mouse_pos = mouse.getPos()
         for i, stim in enumerate(stim_objects):
             # Store original size for reference
             if not hasattr(stim, 'original_size'):
                 stim.original_size = stim.size
     
-                    # Check if mouse is hovering over stimulus with improved hit detection
+            # Check if mouse is hovering over stimulus with improved hit detection
             stim_pos = stim.pos
             stim_size = stim.size[0]  # Assuming square stimuli
     
@@ -228,8 +233,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
     while any(mouse.getPressed()):
         core.wait(0.01)
 
-
-def run_session(win, exp_handler, session_num, target_stim, target_array=None):
+def run_session(win, exp_handler, session_num, target_stim, target_array=None, debug_mode=False):
     """Run a complete session of the experiment"""
     global current_session, current_generation, current_parents
     global next_generation_parents, current_batches, current_batch_index
@@ -266,7 +270,7 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None):
         show_message(win, session_text)
     
     # Run all generations for this session
-    for gen in range(12):  # 12 generations
+    for gen in range(params['generations']):
         current_generation = gen
         
         # If not first generation, prepare offspring
@@ -286,7 +290,7 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None):
         
         # Run all trials for this generation
         for trial in range(12):  # 12 trials per generation
-            run_trial(win, exp_handler, gen, trial, target_stim, target_array)
+            run_trial(win, exp_handler, gen, trial, target_stim, target_array, debug_mode)
     
     # Create and save composite for the last generation
     if participant_selections[11]:
