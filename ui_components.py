@@ -1,9 +1,10 @@
 #ui_components.py
 
 from psychopy import visual, event, core
-from stimuli import generate_noise_pattern, create_image_from_array, create_training_stimulus, create_training_target_j_stim
-from data_saving import save_stimuli_grid, save_stimuli_as_csv
+from stimuli import generate_noise_pattern, create_image_from_array, create_training_stimulus, create_training_target_j_stim, create_training_target_j
+from data_saving import save_stimuli_grid, save_stimuli_as_csv, setup_participant_folders
 import random
+from datetime import datetime
 from experiment_setup import params
 
 def create_text_screen(win, text, pos=(0, 0), height=0.05, color='black'):
@@ -168,16 +169,13 @@ def run_introduction(win, training_target_stim, debug_mode=False):
 
 def run_training_trials(win, exp_handler, debug_mode=False):
     """Run the training trials"""
-    from stimuli import create_training_stimulus, create_image_from_array, create_training_target_j
     
     # Create timestamp for this session if not already created
-    from datetime import datetime
     if 'timestamp' not in globals():
         global timestamp
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
     # Setup participant directory if not already done
-    from data_saving import setup_participant_folders
     participant_id = exp_handler.extraInfo['participant']
     if 'participant_dir' not in globals():
         global participant_dir
@@ -185,21 +183,24 @@ def run_training_trials(win, exp_handler, debug_mode=False):
 
     training_target_stim = create_image_from_array(win, create_training_target_j())
 
+    print("crash after training_target_stim")
     for trial_number in range(1, 13):
         # Create stimuli for this trial 
         stimuli = []
+        stimuli_arrays = []
         target_index = random.randint(0, 11)
-        
+
         for i in range(12):
             if i == target_index:
                 stim_array = create_training_stimulus(True, trial_number)
             else:
                 stim_array = generate_noise_pattern()
+            stimuli_arrays.append(stim_array)
             
             stim = create_image_from_array(win, stim_array)
             stimuli.append(stim)
-        
-        csv_filepaths = save_stimuli_as_csv(stim_array, participant_id, "training", trial_number, timestamp, participant_dir)
+
+        csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, "training", trial_number, timestamp, participant_dir)
 
         # Create UI elements
         target_label = create_text_screen(win, "Target Letter", pos=(0, 0.8), height=0.05)

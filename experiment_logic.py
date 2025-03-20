@@ -42,8 +42,6 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
     
     # Show target
     target_label = create_text_screen(win, "Target Letter", pos=(0, 0.7), height=0.05)
-    
-    csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
 
     # If in debug mode, allow adjusting the UI elements
     if debug_mode:
@@ -85,7 +83,8 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
          # Save the stimuli grid
         participant_id = exp_handler.extraInfo['participant']
         grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
-        
+        csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
+
         # Simulate thinking time
         core.wait(0.2)
         
@@ -154,11 +153,12 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         stim.draw()
     
     win.flip()
-
     # Save the stimuli grid
     participant_id = exp_handler.extraInfo['participant']
     grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
-    
+    csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
+
+
     # Wait for mouse click on a stimulus
     mouse = event.Mouse(visible=True, win=win)
     clicked = False
