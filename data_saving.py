@@ -110,3 +110,63 @@ def save_composite_image(composite_array, participant_id, generation=None, times
         'tiff': tiff_path,
         'csv': csv_path
     }
+
+def setup_stimuli_grid_folder(participant_id, timestamp, participant_dir):
+    """Create a folder to store stimuli grids"""
+    stimuli_grid_dir = os.path.join(participant_dir, "stimuli_grids")
+    if not os.path.exists(stimuli_grid_dir):
+        os.makedirs(stimuli_grid_dir)
+    return stimuli_grid_dir
+
+def save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir):
+    """Save the current window content as an image"""
+    # Get the stimuli grid directory
+    stimuli_grid_dir = setup_stimuli_grid_folder(participant_id, timestamp, participant_dir)
+    
+    # Create filename with generation and trial info
+    filename = f"{participant_id}_G{generation}_T{trial}_grid.png"
+    filepath = os.path.join(stimuli_grid_dir, filename)
+    
+    # Capture the window content
+    win.getMovieFrame()
+    
+    # Save the captured frame
+    win.saveMovieFrames(filepath)
+    
+    return filepath
+
+
+def save_stimuli_as_csv(stimuli_arrays, participant_id, phase, trial, timestamp, participant_dir):
+    """Save all stimuli from a trial as CSV files"""
+    import csv
+    import os
+    
+    # Create a directory for CSV stimuli
+    csv_dir = os.path.join(participant_dir, "stimuli_csv")
+    if not os.path.exists(csv_dir):
+        os.makedirs(csv_dir)
+    
+    # Save each stimulus as a CSV file
+    csv_files = []
+    for i, stim_array in enumerate(stimuli_arrays):
+        filename = f"{participant_id}_{phase}_T{trial}_stim{i}.csv"
+        filepath = os.path.join(csv_dir, filename)
+        
+        with open(filepath, 'w', newline='') as csvfile:
+            writer = csv.writer(csvfile)
+            # Write the array data
+            for row in stim_array:
+                writer.writerow(row)
+        
+        csv_files.append(filepath)
+    
+    # Also save a metadata file with information about the trial
+    meta_filename = f"{participant_id}_{phase}_T{trial}_metadata.csv"
+    meta_filepath = os.path.join(csv_dir, meta_filename)
+    
+    with open(meta_filepath, 'w', newline='') as csvfile:
+        writer = csv.writer(csvfile)
+        writer.writerow(['participant_id', 'phase', 'trial', 'timestamp', 'num_stimuli'])
+        writer.writerow([participant_id, phase, trial, timestamp, len(stimuli_arrays)])
+    
+    return csv_files

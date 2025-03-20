@@ -2,6 +2,7 @@
 
 from psychopy import visual, event, core
 from stimuli import generate_noise_pattern, create_image_from_array, create_training_stimulus, create_training_target_j_stim
+from data_saving import save_stimuli_grid, save_stimuli_as_csv
 import random
 from experiment_setup import params
 
@@ -169,8 +170,21 @@ def run_training_trials(win, exp_handler, debug_mode=False):
     """Run the training trials"""
     from stimuli import create_training_stimulus, create_image_from_array, create_training_target_j
     
-    training_target_stim = create_image_from_array(win, create_training_target_j())
+    # Create timestamp for this session if not already created
+    from datetime import datetime
+    if 'timestamp' not in globals():
+        global timestamp
+        timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     
+    # Setup participant directory if not already done
+    from data_saving import setup_participant_folders
+    participant_id = exp_handler.extraInfo['participant']
+    if 'participant_dir' not in globals():
+        global participant_dir
+        participant_dir = setup_participant_folders(participant_id, timestamp)
+
+    training_target_stim = create_image_from_array(win, create_training_target_j())
+
     for trial_number in range(1, 13):
         # Create stimuli for this trial 
         stimuli = []
@@ -185,6 +199,8 @@ def run_training_trials(win, exp_handler, debug_mode=False):
             stim = create_image_from_array(win, stim_array)
             stimuli.append(stim)
         
+        csv_filepaths = save_stimuli_as_csv(stim_array, participant_id, "training", trial_number, timestamp, participant_dir)
+
         # Create UI elements
         target_label = create_text_screen(win, "Target Letter", pos=(0, 0.8), height=0.05)
         training_target_stim.pos = (0, 0.35)
@@ -218,6 +234,9 @@ def run_training_trials(win, exp_handler, debug_mode=False):
         for i, stim in enumerate(stimuli):
             stim.draw()
         win.flip()
+
+        # Save the stimuli grid
+        grid_filepath = save_stimuli_grid(win, participant_id, "training", trial_number, timestamp, participant_dir)
         
         # Wait for mouse click on a stimulus
         mouse = event.Mouse(visible=True, win=win)
@@ -265,6 +284,8 @@ def run_training_trials(win, exp_handler, debug_mode=False):
                         exp_handler.addData('selected_id', selected_id)
                         exp_handler.addData('correct', is_correct)
                         exp_handler.addData('rt', reaction_time)
+                        exp_handler.addData('stimuli_grid', grid_filepath)
+                        exp_handler.addData('stimuli_csv', csv_filepaths)
                         exp_handler.nextEntry()
                         
                         clicked = True

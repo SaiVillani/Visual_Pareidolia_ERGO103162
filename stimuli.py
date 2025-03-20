@@ -141,6 +141,6 @@ def create_training_stimulus(has_target, trial_number, stim_size=16):
         stimulus = noise.copy()
         stimulus[j_canvas] = np.clip(noise[j_canvas] * (1 - visibility), 0, 255)
 
-        return stimulus
+        return np.flipud(np.array(stimulus))
 
     return noise

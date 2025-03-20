@@ -5,6 +5,9 @@ from stimuli import generate_noise_pattern, create_image_from_array
 from genetic_algorithm import filter_selection, generate_offspring, ideal_observer_select
 from ui_components import create_text_screen, create_stimuli_grid, show_message
 from data_saving import setup_participant_folders, save_selection_image, create_composite_image, save_composite_image
+from data_saving import (setup_participant_folders, save_selection_image, 
+                        create_composite_image, save_composite_image,
+                        save_stimuli_grid, save_stimuli_as_csv)
 from experiment_setup import params
 import numpy as np
 
@@ -40,6 +43,8 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
     # Show target
     target_label = create_text_screen(win, "Target Letter", pos=(0, 0.7), height=0.05)
     
+    csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
+
     # If in debug mode, allow adjusting the UI elements
     if debug_mode:
         from debug_utils import debug_ui_section
@@ -76,6 +81,10 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
             stim.draw()
         
         win.flip()
+
+         # Save the stimuli grid
+        participant_id = exp_handler.extraInfo['participant']
+        grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
         
         # Simulate thinking time
         core.wait(0.2)
@@ -123,6 +132,8 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         exp_handler.addData('selected_id', selected_id)
         exp_handler.addData('rt', 0.2)  # Simulated reaction time
         exp_handler.addData('mode', 'ideal_observer')
+        exp_handler.addData('stimuli_grid', grid_filepath)
+        exp_handler.addData('stimuli_csv', csv_filepaths)
         exp_handler.nextEntry()
         
         # Wait between trials
@@ -143,6 +154,10 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         stim.draw()
     
     win.flip()
+
+    # Save the stimuli grid
+    participant_id = exp_handler.extraInfo['participant']
+    grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
     
     # Wait for mouse click on a stimulus
     mouse = event.Mouse(visible=True, win=win)
@@ -219,6 +234,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
                     exp_handler.addData('trial', trial)
                     exp_handler.addData('selected_id', selected_id)
                     exp_handler.addData('rt', reaction_time)
+                    exp_handler.addData('stimuli_grid', grid_filepath)
                     exp_handler.nextEntry()
                     
                     clicked = True
