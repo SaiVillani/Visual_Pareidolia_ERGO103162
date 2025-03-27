@@ -39,9 +39,9 @@ def load_tiff_image(filepath):
         print(f"Error loading image {filepath}: {e}")
         return None
     
-def load_images_from_classes(base_dir="rating_task_images"):
-    """Load classification images from High/Mid/Low imagery participant folders"""
-    participant_classes = ['High_imagery', 'Mid_imagery', 'Low_imagery']
+def load_images_from_classes(base_dir="organised_by_imagery"):
+    """Load classification images from High/Mid/Low imagery folders"""
+    participant_classes = ['high', 'mid', 'low']
     all_image_data = []
     
     for participant_class in participant_classes:
@@ -50,46 +50,36 @@ def load_images_from_classes(base_dir="rating_task_images"):
             print(f"Warning: Directory {class_dir} does not exist")
             continue
             
-        participant_folders = [f for f in os.listdir(class_dir) if f.startswith('P')]
+        image_files = [f for f in os.listdir(class_dir) if f.endswith('_composite.tiff')]
         
-        for participant in participant_folders:
-            participant_dir = os.path.join(class_dir, participant)
+        for image_file in image_files:
+            image_path = os.path.join(class_dir, image_file)
+            img = load_tiff_image(image_path)
             
-            for session in ['S1', 'S2']:
-                session_dir = os.path.join(participant_dir, session)
-                if not os.path.exists(session_dir):
-                    continue
-                    
-                for generation in ['G2', 'G6']:
-                    gen_dir = os.path.join(session_dir, generation)
-                    if not os.path.exists(gen_dir):
-                        continue
-                        
-                    # Look for composite.tiff file
-                    image_path = os.path.join(
-                        gen_dir, 
-                        f"{participant}_{session}_{generation}_composite.tiff"
-                    )
-                    
-                    if os.path.exists(image_path):
-                        img = load_tiff_image(image_path)
-                        if img is not None:
-                            all_image_data.append({
-                                'image': img,
-                                'metadata': {
-                                    'participant_class': participant_class,
-                                    'participant_id': participant,
-                                    'generation': generation,
-                                    'session': session,
-                                    'image_path': image_path
-                                }
-                            })
+            if img is not None:
+                # Parse metadata from filename
+                parts = image_file.split('_')
+                participant_id = parts[0]
+                session = parts[1]
+                generation = parts[2]
+                
+                all_image_data.append({
+                    'image': img,
+                    'metadata': {
+                        'participant_class': participant_class,
+                        'participant_id': participant_id,
+                        'generation': generation,
+                        'session': session,
+                        'image_path': image_path
+                    }
+                })
     
     # Shuffle the images
     random.shuffle(all_image_data)
     
     print(f"Found {len(all_image_data)} images total")
     return all_image_data
+
 
 def create_image_from_array(win, array):
     """Convert numpy array to PsychoPy stimulus"""
