@@ -1,0 +1,22 @@
+participant_id,group,score,valid,status
+12682,low,0.58125,True,✅ Valid
+13102,low,0.64375,True,✅ Valid
+12028,low,0.59375,True,✅ Valid
+13336,low,0.50625,True,✅ Valid
+4737,low,0.61875,True,✅ Valid
+12682,low,0.58125,True,✅ Valid
+-1,low,0.2625,True,✅ Valid
+13186,mid,0.825,True,✅ Valid
+12295,mid,0.78125,True,✅ Valid
+13153,mid,0.76875,True,✅ Valid
+13597,mid,0.81875,True,✅ Valid
+12298,mid,0.73125,True,✅ Valid
+12286,mid,0.775,True,✅ Valid
+12070,mid,0.7875,True,✅ Valid
+4739,high,0.89375,True,✅ Valid
+11974,high,1.375,True,✅ Valid
+12574,high,0.8875,True,✅ Valid
+11935,high,1.3625,True,✅ Valid
+13615,high,0.96875,True,✅ Valid
+12700,high,1.05,True,✅ Valid
+11911,high,1.725,True,✅ Valid
