@@ -161,7 +161,7 @@ def run_rating_task(win, exp_handler, debug_mode=False):
         # Create image stimulus
         img_stim = create_image_from_array(win, img_array)
         img_stim.pos = (0, 0.12)
-        img_stim.setSize((0.3, 0.3))
+        img_stim.setSize((0.25, 0.25))
         
         # Reset rating scale for new image
         rating_scale.rating = None

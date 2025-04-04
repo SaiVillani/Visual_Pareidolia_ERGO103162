@@ -10,7 +10,7 @@ Genetic Reverse Correlation Task - Main Runner
 from psychopy import core
 from experiment_setup import setup_experiment, params
 from stimuli import create_target_s, create_training_target_j, create_target_s_stim, create_training_target_j_stim
-from ui_components import run_introduction, run_training_trials, show_debrief, show_break
+from ui_components import run_introduction, run_training_trials, show_break
 from experiment_logic import run_session
 
 def main():
@@ -67,10 +67,6 @@ def main():
         if params["mode"] == "manual" and (not debug_mode or debug_section == 4):
             from rating_task import run_rating_task
             run_rating_task(win, exp_handler, debug_mode)
-        
-        # Show debrief (skip in ideal observer mode)
-        if params["mode"] == "manual" and not debug_mode:
-            show_debrief(win)
         
     except Exception as e:
         print(f"Error in experiment: {e}")

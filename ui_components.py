@@ -98,7 +98,7 @@ def run_introduction(win, training_target_stim, debug_mode=False):
     
     In this experiment, you'll be searching for hidden patterns within visual noise.
     
-    On each trial, you'll see a grid of 10 patterns. Your task is to find the pattern 
+    On each trial, you'll see a grid of 12 patterns. Your task is to find the pattern 
     that most resembles the target symbol.
     
     First, you'll complete a brief training session to familiarize yourself with the task. 
@@ -112,7 +112,7 @@ def run_introduction(win, training_target_stim, debug_mode=False):
     training_text = """
     Training Phase
     
-    Let's start with 10 practice trials to help you understand the task.
+    Let's start with 12 practice trials to help you understand the task.
     
     During training, the patterns will start very clear and become gradually more subtle. 
     This helps you learn what to look for in visual noise.
@@ -329,25 +329,3 @@ def show_break(win, debug_mode=False):
     Remember to keep looking for patterns that resemble the letter 'S'.
     """
     show_message(win, break_text, debug_mode=debug_mode)
-
-def show_debrief(win, debug_mode=False):
-    """Show the debrief screen"""
-    debrief_text = """
-    Thank You for Participating!
-    
-    You have completed the experiment. Your data has been saved.
-    
-    The aim of this research was to understand the relationship between visual mental 
-    imagery and pareidolia. Pareidolia is the tendency to perceive meaningful patterns 
-    or images in random or ambiguous stimuli, such as seeing faces in clouds or objects 
-    in random shapes.
-    
-    Your participation will contribute to our understanding of the relationship between 
-    pareidolia, visual imagery, and perception. This knowledge is valuable for developing 
-    more accurate and objective assessments of visual imagery abilities.
-    
-    If you have any questions about this study, please contact the researcher.
-    
-    Thank you again for your participation!
-    """
-    show_message(win, debrief_text, "Exit", debug_mode=debug_mode)
