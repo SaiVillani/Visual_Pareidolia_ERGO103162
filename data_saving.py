@@ -56,7 +56,8 @@ class ParticipantDataManager:
         # Save as PNG
         png_path = os.path.join(self.participant_dir, 'png', f'{filename_base}.png')
         img = Image.fromarray(array)
-        img = ImageOps.exif_transpose(img)  # Handle EXIF orientation
+        #img = ImageOps.exif_transpose(img)  # Handle EXIF orientation - does not work Pillow & PsychoPy have diff coordinate systems
+        img = img.transpose(Image.FLIP_TOP_BOTTOM)  # Explicitly flip vertically
         img.save(png_path)
         
         # Save as TIFF
@@ -99,6 +100,7 @@ class ParticipantDataManager:
         # Save as PNG
         png_path = os.path.join(composites_dir, f'{filename_base}.png')
         img = Image.fromarray(composite_array)
+        img = img.transpose(Image.FLIP_TOP_BOTTOM)  # Explicitly flip vertically
         img.save(png_path)
         
         # Save as TIFF

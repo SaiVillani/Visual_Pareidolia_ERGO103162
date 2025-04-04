@@ -5,4 +5,5 @@ participant_images/*/stimuli_csv
 participant_images/*/stimuli_grids
 participant_images/*/tiff
 study_data_export_20250225_125147
+data
 .vscode
