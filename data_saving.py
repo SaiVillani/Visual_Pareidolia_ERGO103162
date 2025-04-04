@@ -1,7 +1,7 @@
 import os
 import numpy as np
 import pandas as pd
-from PIL import Image
+from PIL import Image, ImageOps
 import csv
 from datetime import datetime
 
@@ -56,6 +56,7 @@ class ParticipantDataManager:
         # Save as PNG
         png_path = os.path.join(self.participant_dir, 'png', f'{filename_base}.png')
         img = Image.fromarray(array)
+        img = ImageOps.exif_transpose(img)  # Handle EXIF orientation
         img.save(png_path)
         
         # Save as TIFF
