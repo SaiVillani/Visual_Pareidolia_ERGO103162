@@ -6,7 +6,7 @@ from datetime import datetime
 
 # Experimental parameters
 params = {
-    "generations": 2,
+    "generations": 12,
     "trials_per_gen": 12,
     "sessions": 1,
     "stim_size": 16,
