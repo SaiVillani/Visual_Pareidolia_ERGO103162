@@ -1,4 +1,8 @@
 venv
-participant_images
+participant_images/*/csv
+participant_images/*/png 
+participant_images/*/stimuli_csv
+participant_images/*/stimuli_grids
+participant_images/*/tiff
 study_data_export_20250225_125147
 .vscode
