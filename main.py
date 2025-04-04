@@ -1,4 +1,3 @@
-#main.py
 
 #!/usr/bin/env python
 # -*- coding: utf-8 -*-
@@ -12,12 +11,17 @@ from experiment_setup import setup_experiment, params
 from stimuli import create_target_s, create_training_target_j, create_target_s_stim, create_training_target_j_stim
 from ui_components import run_introduction, run_training_trials, show_break
 from experiment_logic import run_session
+from data_saving import ParticipantDataManager
 
 def main():
     """Run the complete experiment"""
     try:
         # Setup experiment
         exp_handler, win, exp_info = setup_experiment()
+        
+        # Create data manager for this participant
+        participant_id = exp_handler.extraInfo['participant']
+        data_manager = ParticipantDataManager(participant_id)
         
         # Check if in debug mode
         debug_mode = params.get("debug", False)
@@ -57,12 +61,11 @@ def main():
             
         # Run training trials
         if params["mode"] == "manual" and (not debug_mode or debug_section == 2):
-            run_training_trials(win, exp_handler, debug_mode)
+            run_training_trials(win, exp_handler, data_manager, debug_mode)
         
         # Run main session
         if not debug_mode or debug_section == 3:
-            run_session(win, exp_handler, 1, target_stim, target_array, debug_mode)
-
+            run_session(win, exp_handler, 1, target_stim, target_array, debug_mode, data_manager)
         # Run rating task
         if params["mode"] == "manual" and (not debug_mode or debug_section == 4):
             from rating_task import run_rating_task

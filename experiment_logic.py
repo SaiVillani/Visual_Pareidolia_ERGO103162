@@ -242,7 +242,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         core.wait(0.01)
 
 
-def run_session(win, exp_handler, session_num, target_stim, target_array=None, debug_mode=False):
+def run_session(win, exp_handler, session_num, target_stim, target_array=None, debug_mode=False, data_manager=None):
     """Run a complete session of the experiment"""
     global current_session, current_generation, current_parents
     global next_generation_parents, current_batches, current_batch_index
@@ -257,10 +257,6 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None, d
     
     # Initialize participant selections tracking
     participant_selections = {gen: [] for gen in range(12)}
-    
-    # Create data manager for this participant
-    participant_id = exp_handler.extraInfo['participant']
-    data_manager = ParticipantDataManager(participant_id)
     
     # Show session start message
     if params["mode"] == "manual":
