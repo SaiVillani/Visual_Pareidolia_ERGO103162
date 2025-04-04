@@ -59,7 +59,7 @@ def setup_experiment():
         screen=0,
         allowGUI=True,
         allowStencil=False,
-        monitor='SAMSUNG',
+        monitor='phantom_lab',
         color='white',
         colorSpace='rgb',
         blendMode='avg',
