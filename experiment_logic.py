@@ -4,10 +4,7 @@ from psychopy import event, core
 from stimuli import generate_noise_pattern, create_image_from_array
 from genetic_algorithm import filter_selection, generate_offspring, ideal_observer_select
 from ui_components import create_text_screen, create_stimuli_grid, show_message
-from data_saving import setup_participant_folders, save_selection_image, create_composite_image, save_composite_image
-from data_saving import (setup_participant_folders, save_selection_image, 
-                        create_composite_image, save_composite_image,
-                        save_stimuli_grid, save_stimuli_as_csv)
+from data_saving import ParticipantDataManager
 from experiment_setup import params
 import numpy as np
 
@@ -24,7 +21,7 @@ participant_selections = {}  # Dictionary to store all selections by generation
 participant_dir = None
 timestamp = None
 
-def run_trial(win, exp_handler, generation, trial, target_stim, target_array=None, debug_mode=False):
+def run_trial(win, exp_handler, generation, trial, target_stim, target_array=None, debug_mode=False, data_manager=None):
     """Run a single trial of the main experiment"""
     global current_batch_index, next_generation_parents, participant_selections
     
@@ -67,7 +64,6 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
             
         # Show target
         target_label = create_text_screen(win, "Target Letter (Ideal Observer Mode)", pos=(0, 0.8), height=0.05)
-        #target_label.draw()
 
         target_stim.pos = (0, 0.35)
         target_stim.draw()
@@ -80,10 +76,10 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         
         win.flip()
 
-         # Save the stimuli grid
+        # Save the stimuli grid
         participant_id = exp_handler.extraInfo['participant']
-        grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
-        csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
+        grid_filepath = data_manager.save_stimuli_grid(win, generation, trial)
+        csv_filepaths = data_manager.save_stimuli_as_csv(stimuli_arrays, f"G{generation}", trial)
 
         # Simulate thinking time
         core.wait(0.2)
@@ -110,11 +106,10 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         # Apply filtering to selected image
         filtered_array = filter_selection(selected_array, non_selected_arrays)
 
-        #save the selection image
-        participant_id = exp_handler.extraInfo['participant']
-        save_selection_image(selected_array, participant_id, generation, trial, timestamp, participant_dir)
+        # Save the selection image
+        data_manager.save_selection_image(selected_array, generation, trial)
 
-        #track the selection for composites
+        # Track the selection for composites
         participant_selections[generation].append(selected_array)
         
         # Add to parents for next generation
@@ -138,10 +133,8 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         # Wait between trials
         core.wait(params["inter_trial_interval"])
         return
-        
+
     # Manual mode - rest of the function as before
-    # Show target
-    #target_label.draw()
     
     target_stim.pos = (0, 0.35)
     target_stim.draw()
@@ -153,11 +146,11 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
         stim.draw()
     
     win.flip()
+
     # Save the stimuli grid
     participant_id = exp_handler.extraInfo['participant']
-    grid_filepath = save_stimuli_grid(win, participant_id, generation, trial, timestamp, participant_dir)
-    csv_filepaths = save_stimuli_as_csv(stimuli_arrays, participant_id, f"G{generation}", trial, timestamp, participant_dir)
-
+    grid_filepath = data_manager.save_stimuli_grid(win, generation, trial)
+    csv_filepaths = data_manager.save_stimuli_as_csv(stimuli_arrays, f"G{generation}", trial)
 
     # Wait for mouse click on a stimulus
     mouse = event.Mouse(visible=True, win=win)
@@ -215,8 +208,7 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
                     filtered_array = filter_selection(selected_array, non_selected_arrays)
 
                     #save the selection image
-                    participant_id = exp_handler.extraInfo['participant']
-                    save_selection_image(selected_array, participant_id, generation, trial, timestamp, participant_dir)
+                    data_manager.save_selection_image(selected_array, generation, trial)
 
                     #track the selection for composites
                     participant_selections[generation].append(selected_array)
@@ -249,11 +241,12 @@ def run_trial(win, exp_handler, generation, trial, target_stim, target_array=Non
     while any(mouse.getPressed()):
         core.wait(0.01)
 
+
 def run_session(win, exp_handler, session_num, target_stim, target_array=None, debug_mode=False):
     """Run a complete session of the experiment"""
     global current_session, current_generation, current_parents
     global next_generation_parents, current_batches, current_batch_index
-    global participant_selections, participant_dir, timestamp
+    global participant_selections
     
     # Initialize session variables
     current_session = session_num
@@ -265,13 +258,9 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None, d
     # Initialize participant selections tracking
     participant_selections = {gen: [] for gen in range(12)}
     
-    # Create timestamp for this session
-    from datetime import datetime
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    
-    # Create participant folders
+    # Create data manager for this participant
     participant_id = exp_handler.extraInfo['participant']
-    participant_dir = setup_participant_folders(participant_id, timestamp)
+    data_manager = ParticipantDataManager(participant_id)
     
     # Show session start message
     if params["mode"] == "manual":
@@ -301,17 +290,17 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None, d
             
             # Create and save composite for the previous generation
             if participant_selections[gen-1]:
-                composite = create_composite_image(participant_selections[gen-1])
-                save_composite_image(composite, participant_id, gen-1, timestamp, participant_dir)
+                composite = data_manager.create_composite_image(participant_selections[gen-1])
+                data_manager.save_composite_image(composite, gen-1)
         
         # Run all trials for this generation
         for trial in range(12):  # 12 trials per generation
-            run_trial(win, exp_handler, gen, trial, target_stim, target_array, debug_mode)
+            run_trial(win, exp_handler, gen, trial, target_stim, target_array, debug_mode, data_manager)
     
     # Create and save composite for the last generation
     if participant_selections[11]:
-        composite = create_composite_image(participant_selections[11])
-        save_composite_image(composite, participant_id, 11, timestamp, participant_dir)
+        composite = data_manager.create_composite_image(participant_selections[11])
+        data_manager.save_composite_image(composite, 11)
     
     # Create and save mega-composite of all selections
     all_selections = []
@@ -319,5 +308,6 @@ def run_session(win, exp_handler, session_num, target_stim, target_array=None, d
         all_selections.extend(participant_selections[gen])
     
     if all_selections:
-        mega_composite = create_composite_image(all_selections)
-        save_composite_image(mega_composite, participant_id, None, timestamp, participant_dir)
+        mega_composite = data_manager.create_composite_image(all_selections)
+        data_manager.save_composite_image(mega_composite)
+
